@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>KnowUrBite - Lab Dashboard</title>
+
+<style>
+
+body{
+font-family:'Segoe UI',sans-serif;
+background:#f4f6f9;
+margin:0;
+}
+
+.header{
+background:#1f2d3d;
+color:white;
+padding:18px;
+font-size:22px;
+display:flex;
+justify-content:space-between;
+}
+
+.container{
+padding:25px;
+}
+
+.card{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:10px;
+box-shadow:0px 3px 8px rgba(0,0,0,0.08);
+}
+
+.sample-box{
+border-left:6px solid #3498db;
+padding:15px;
+margin-bottom:15px;
+background:#fafafa;
+border-radius:6px;
+}
+
+.btn{
+padding:8px 14px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:bold;
+margin-right:8px;
+}
+
+.analysis{background:#27ae60;color:white;}
+.spectral{background:#2980b9;color:white;}
+.support{background:#f39c12;color:white;}
+
+.badge{
+padding:4px 10px;
+border-radius:12px;
+font-size:12px;
+font-weight:bold;
+}
+
+.pending{background:orange;color:white;}
+.completed{background:green;color:white;}
+
+textarea{
+width:100%;
+height:60px;
+padding:8px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.no-data{
+text-align:center;
+color:#888;
+padding:20px;
+}
+
+select,input{
+padding:6px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<div>🧪 KnowUrBite - Lab Dashboard</div>
+<div>Lab ID: {{lab_id}}</div>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h3>📦 Assigned Samples</h3>
+
+{% if submissions %}
+
+{% for sub in submissions %}
+
+<div class="sample-box">
+
+<b>Sample ID:</b> {{sub[0]}} <br><br>
+
+<b>Status:</b>
+
+{% if sub[1]=='Completed' %}
+<span class="badge completed">Completed</span>
+{% else %}
+<span class="badge pending">Pending</span>
+{% endif %}
+
+<br><br>
+
+<a href="/enose_analysis/{{sub[0]}}">
+<button class="btn analysis">E-Nose Analysis</button>
+</a>
+
+<a href="/spectral_analysis/{{sub[0]}}">
+<button class="btn spectral">Spectral Analysis</button>
+</a>
+
+</div>
+
+{% endfor %}
+
+{% else %}
+
+<div class="no-data">
+No submissions assigned yet
+</div>
+
+{% endif %}
+
+</div>
+
+
+<div class="card">
+
+<h3>🛠 Equipment Status</h3>
+{% set enose_status = equipment[0] if equipment else 'Available' %}
+{% set spectrometer_status = equipment[1] if equipment else 'Available' %}
+
+
+<form method="POST" action="/update_equipment">
+
+<label><b>E-Nose</b></label>
+
+<select name="enose_status">
+
+<option value="Available"
+{% if enose_status == 'Available' %}selected{% endif %}>
+Available
+</option>
+
+<option value="Busy"
+{% if enose_status == 'Busy' %}selected{% endif %}>
+Busy
+</option>
+
+<option value="Maintenance"
+{% if enose_status == 'Maintenance' %}selected{% endif %}>
+Maintenance
+</option>
+
+</select>
+
+<br><br>
+
+<label><b>Spectrometer</b></label>
+
+<select name="spectrometer_status">
+
+<option value="Available"
+{% if spectrometer_status == 'Available' %}selected{% endif %}>
+Available
+</option>
+
+<option value="Busy"
+{% if spectrometer_status == 'Busy' %}selected{% endif %}>
+Busy
+</option>
+
+<option value="Maintenance"
+{% if spectrometer_status == 'Maintenance' %}selected{% endif %}>
+Maintenance
+</option>
+
+</select>
+
+<br><br>
+
+<button type="submit" class="btn support">Update Status</button>
+
+</form>
+
+</div>
+
+
+<div class="card">
+
+<h3>🤝 Find External Lab Support</h3>
+
+<form method="POST" action="/find_lab">
+
+<label><b>Device Needed</b></label>
+
+<select name="device">
+
+<option value="ENose">E-Nose</option>
+<option value="Spectral">Spectral Analysis</option>
+<option value="Chemical">Chemical Testing</option>
+
+</select>
+
+<br><br>
+
+<label><b>State</b></label>
+
+<input type="text" name="state" placeholder="Enter State">
+
+<br><br>
+
+<button type="submit" class="btn support">
+🔍 Find Labs
+</button>
+
+</form>
+
+</div>
+
+
+{% if matched_labs %}
+
+<div class="card">
+
+<h3>🏥 Recommended Labs</h3>
+
+{% for lab in matched_labs %}
+
+<div class="sample-box">
+
+<b>{{lab['Lab Name']}}</b>
+
+<br><br>
+
+Contact Person: {{lab['Contact Person']}} <br>
+Phone: {{lab['Phone']}} <br>
+Email: {{lab['Email']}}
+
+<br><br>
+
+<a href="mailto:{{lab['Email']}}?subject=Support Request from Lab {{lab_id}}&body=Hello {{lab['Contact Person']}},%0D%0A%0D%0AWe are reaching out from Lab {{lab_id}} to request external support for our analysis.%0D%0A%0D%0APlease let us know if your equipment is available.%0D%0A%0D%0AThank you!" 
+   class="btn analysis" 
+   style="text-decoration: none; display: inline-block; text-align: center;">
+Request Support
+</a>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+</body>
+</html>
